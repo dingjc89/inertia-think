@@ -1,0 +1,6 @@
+{
+    "name": "inertia/think",
+    "require": {
+        "topthink/framework": "8.0.0"
+    }
+}
