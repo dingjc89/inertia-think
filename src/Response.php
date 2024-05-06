@@ -2,7 +2,9 @@
 
 namespace Internia;
 
+use think\contract\Arrayable;
 use think\facade\View;
+use think\helper\Arr;
 use think\Request;
 use think\response\Json;
 
@@ -65,11 +67,13 @@ class Response
     public function toResponse(Request $request): string|\think\Response
     {
         $only = array_filter(explode(',', $request->header(self::HeaderPartialData, '')));
-        if ($only && $request->header(self::HeaderPartialData) == $this->component) {
+        if ($only && $request->header(self::HeaderPartialData) === $this->component) {
             $props = $only;
         } else {
             $props = $this->props;
         }
+
+       $props = $this->resolvePropertyInstance($props, $request);
 
         $page = [
             'component' => $this->component,
@@ -85,6 +89,28 @@ class Response
         }
 
         return View::display($this->rootView, $this->viewData + ['page' => $page]);
+    }
+
+    public function resolvePropertyInstance(array $props, Request $request, bool $unpackDotProps = true): array
+    {
+        foreach ($props as $key => $value) {
+            if ($value instanceof \think\Response) {
+                $value = $value->getData();
+            }
+
+            if ($value instanceof Arrayable) {
+                $value = $value->toArray();
+            }
+
+            if ($unpackDotProps && str_contains($key, '.')) {
+                Arr::set($props, $key, $value);
+                unset($props[$key]);
+            }else {
+                $props[$key] = $value;
+            }
+        }
+
+        return $props;
     }
 
     public function status(int $code): self

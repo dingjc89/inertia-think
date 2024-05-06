@@ -3,6 +3,7 @@
 namespace Internia;
 
 use think\Request;
+use think\response\Redirect;
 
 class Middleware
 {
@@ -24,14 +25,34 @@ class Middleware
             'Vary' => true,
             'X-Inertia' => true,
         ]);
+        if ($response->getCode() === 200 && empty($response->getContent())) {
+            $response = $this->onEmptyResponse($request, $response);
+        }
         if (! $request->header('X-Inertia')) {
             return $response;
         }
         return $response;
     }
 
-    public function version(Request $request)
+    public function onEmptyResponse(Request $request, \think\Response $response): Redirect
     {
+        return redirect()->restore();
+    }
+
+    public function version(Request $request): bool|string|null
+    {
+        if (config('app.asset_url')) {
+            return md5(config('app.asset_url'));
+        }
+
+        if (file_exists($manifest = public_path('mix-manifest.json'))) {
+            return md5_file($manifest);
+        }
+
+        if (file_exists($manifest = public_path('build/manifest.json'))) {
+            return md5_file($manifest);
+        }
+
         return null;
     }
 
@@ -51,5 +72,6 @@ class Middleware
 
     public function resolveValidationErrors(Request $request)
     {
+        return null;
     }
 }
