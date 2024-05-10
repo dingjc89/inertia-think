@@ -27,7 +27,7 @@ class Response
     private int $code;
 
 
-    public function __construct(string $component, array $props, string $rootView = 'app', string $version)
+    public function __construct(string $component, array $props, string $rootView = 'app', string $version = '')
     {
         $this->component = $component;
         $this->props = $props;
@@ -78,17 +78,15 @@ class Response
         $page = [
             'component' => $this->component,
             'props' => $props,
-            'url' => $request->url(true),
+            'url' => $request->url(),
             'version' => $this->version,
         ];
-
         if ($request->header(self::HeaderPrefix)) {
             return Json::create($page)->header([
                 self::HeaderPrefix => true,
             ]);
         }
-
-        return View::display($this->rootView, $this->viewData + ['page' => $page]);
+        return View::fetch($this->rootView, $this->viewData + ['page' => $page]);
     }
 
     public function resolvePropertyInstance(array $props, Request $request, bool $unpackDotProps = true): array

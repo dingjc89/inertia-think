@@ -15,4 +15,11 @@ class ServiceProvider extends Service
     {
 
     }
+
+    public function registerTemplateDirectives()
+    {
+
+    }
+
+    
 }

@@ -8,7 +8,7 @@ class ResponseFactory
 
     protected array $shareProps = [];
 
-    protected string $version;
+    protected string $version = '';
 
     public function setRootView(string $name): void
     {
@@ -48,13 +48,13 @@ class ResponseFactory
         return $this->version;
     }
 
-    public function render(string $component, array $props = []): Response
+    public function render(string $component, array $props = [])
     {
-        return new Response(
+        return (new Response(
             $component,
             $props,
             $this->rootView,
-            $this->version
-        );
+            $this->getVersion(),
+        ))->toResponse(request());
     }
 }
